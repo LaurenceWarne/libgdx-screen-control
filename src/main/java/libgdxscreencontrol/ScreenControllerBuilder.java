@@ -8,6 +8,9 @@ import libgdxscreencontrol.screen.IChoiceScreen;
 import libgdxscreencontrol.screen.ITransitionScreen;
 import lombok.NonNull;
 
+/**
+ * Builder class for easy creation of <code>ScreenController</code> instances.
+ */
 public class ScreenControllerBuilder {
 
     private final ObjectMap<String, ITransitionScreen> transitionScreens =
@@ -34,9 +37,9 @@ public class ScreenControllerBuilder {
     public ScreenControllerBuilder choice(
 	@NonNull String choiceScreenName, @NonNull String choiceName, int choice
     ) throws IllegalArgumentException {
-	if (!isScreenRegistered(choiceScreenName)) {
+	if (!choiceScreens.containsKey(choiceScreenName)) {
 	    throw new IllegalArgumentException(
-		"Cannot find a registered screen with name: " + choiceScreenName
+		"Cannot find a registered choice screen with name: " + choiceScreenName
 	    );
 	}
 	else if (!isScreenRegistered(choiceName)) {
@@ -53,15 +56,49 @@ public class ScreenControllerBuilder {
     public ScreenControllerBuilder follow(
 	@NonNull String transitionScreenName, @NonNull String screenName
     ) {
-	transitionMap.put(transitionScreenName, screenName);
-	return this;
+	if (!transitionScreens.containsKey(transitionScreenName)) {
+	    throw new IllegalArgumentException(
+		"Cannot find a registered choice screen with name: " +
+		transitionScreenName
+	    );
+	}
+	else if (!isScreenRegistered(screenName)) {
+	    throw new IllegalArgumentException(
+		"Cannot find a registered screen with name: " + screenName
+	    );	    
+	}
+	else {
+	    transitionMap.put(transitionScreenName, screenName);
+	    return this;
+	}	
     }
 
-    public <T extends ITransitionScreen> T get(@NonNull String name, Class<T> clazz) {
-	return null;
+    public <T extends ITransitionScreen> T get(
+	@NonNull String name, Class<T> clazz
+    ) throws IllegalArgumentException {
+	final ITransitionScreen screen;
+	if (transitionScreens.containsKey(name)) {
+	    screen = transitionScreens.get(name);
+	}
+	else if (choiceScreens.containsKey(name)) {
+	    screen = choiceScreens.get(name);
+	}
+	else {
+	    throw new IllegalArgumentException(
+		"Could not find a screen registered with name: " + name
+	    );
+	}
+	try {
+	    return (T) screen;
+	} catch (ClassCastException e) {
+	    throw new IllegalArgumentException(
+		name + " screen is of type: " + screen.getClass() +
+		" not of type " + clazz
+	    );
+	}
     }
 
-    public boolean isScreenRegistered(String screenName) {
+    public boolean isScreenRegistered(@NonNull String screenName) {
 	return choiceScreens.containsKey(screenName) ||
 	    transitionScreens.containsKey(screenName);
     }
