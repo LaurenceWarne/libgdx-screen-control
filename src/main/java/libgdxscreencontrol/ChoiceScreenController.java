@@ -10,6 +10,9 @@ import libgdxscreencontrol.screen.IChoiceScreen;
 import libgdxscreencontrol.screen.IChoiceScreen.IChoiceScreenFactory;
 import lombok.NonNull;
 
+/**
+ * Manages {@link IChoiceScreen}s and their choices.
+ */
 public class ChoiceScreenController {
 
     @NonNull
@@ -46,11 +49,16 @@ public class ChoiceScreenController {
     }
 
     /**
+     * Get the choice assigned to the specified choiceScreenName.
      *
+     * @param choiceScreenName of the screen
+     * @param choice
+     * @return name of choice
+     * @throws IllegalArgumentException if the choice has not yet been assigned or a screen with the specified name is not registered with this object.
      */
-    public String getNameOfChoice(
+    public String getChoice(
 	@NonNull final String choiceScreenName, final int choice
-    ) {
+    ) throws IllegalArgumentException {
 	if (choiceMap.contains(choiceScreenName, choice)) {
 	    return choiceMap.get(choiceScreenName, choice);
 	} else {
@@ -60,6 +68,12 @@ public class ChoiceScreenController {
 	}
     }
 
+    /**
+     * Return true if the specified name belongs to a screen, else false. False is returned if name is null.
+     *
+     * @param name
+     * @return true if the specified name belongs to a screen, else false
+     */
     public boolean has(@Nullable final String name) {
 	if (name == null) {
 	    return false;
@@ -73,6 +87,13 @@ public class ChoiceScreenController {
 	}
     }
 
+    /**
+     * Get the {@link IChoiceScreen} object registered with the specified name.
+     *
+     * @param name
+     * @return screen registered with name
+     * @throws IllegalArgumentException if no screen is registered with the given name
+     */
     public IChoiceScreen get(@NonNull final String name) {
 	if (choiceScreens.containsKey(name)) {
 	    return choiceScreens.get(name);
@@ -88,11 +109,24 @@ public class ChoiceScreenController {
 	}
     }
 
+    /**
+     * Set a choice of the specified screen.
+     *
+     * @param choiceScreenName
+     * @param choice
+     * @param choiceName
+     * @throws IllegalArgumentException if choiceScreenName does not belong to any screen added to this object
+     */
     public void setChoice(
 	@NonNull final String choiceScreenName,
 	final int choice,
 	@NonNull final String choiceName
-    ) {
-	choiceMap.put(choiceScreenName, choice, choiceName);
+    ) throws IllegalArgumentException {
+	if (has(choiceScreenName)) {
+	    choiceMap.put(choiceScreenName, choice, choiceName);
+	}
+	else {
+	    throw new IllegalArgumentException("No screen exists with name: " + choiceScreenName);
+	}
     }
 }
