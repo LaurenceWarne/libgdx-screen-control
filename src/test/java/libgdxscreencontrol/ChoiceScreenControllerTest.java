@@ -84,7 +84,7 @@ public class ChoiceScreenControllerTest {
     }
 
     @Test(expected=IllegalArgumentException.class)    
-    public void testCorrectExceptionThrownOnScreenNotAdded() {
+    public void testCorrectExceptionThrownOnGetChoiceWithScreenNotAdded() {
 	csController.add("screen1", s1);	
 	csController.setChoice("screen1", 1, "screen2");
 	csController.getChoice("screen2", 2);
