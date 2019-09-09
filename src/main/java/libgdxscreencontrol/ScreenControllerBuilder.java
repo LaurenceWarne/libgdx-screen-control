@@ -1,9 +1,5 @@
 package libgdxscreencontrol;
 
-import com.badlogic.gdx.utils.ObjectMap;
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
-
 import libgdxscreencontrol.screen.IChoiceScreen;
 import libgdxscreencontrol.screen.ITransitionScreen;
 import lombok.NonNull;
@@ -13,42 +9,41 @@ import lombok.NonNull;
  */
 public class ScreenControllerBuilder {
 
-    private final ObjectMap<String, ITransitionScreen> transitionScreens =
-	new ObjectMap<>();
-    private final ObjectMap<String, IChoiceScreen> choiceScreens =
-	new ObjectMap<>();
-    private final ObjectMap<String, String> transitionMap = new ObjectMap<>();
-    private final Table<String, Integer, String> choiceMap = HashBasedTable.create();
+    private final TransitionScreenController transitionController =
+	new TransitionScreenController();
+    private final ChoiceScreenController choiceController =
+	new ChoiceScreenController();
+    private String startingScreenName;
 
+    public ScreenControllerBuilder withStartingScreen(@NonNull String screenName) {
+	this.startingScreenName = screenName;
+	return this;
+    }
+    
     public ScreenControllerBuilder register(
 	@NonNull String name, @NonNull ITransitionScreen screen
     ) {
-	transitionScreens.put(name, screen);
+	transitionController.add(name, screen);
 	return this;
     }
 
     public ScreenControllerBuilder register(
 	@NonNull String name, @NonNull IChoiceScreen screen
     ) {
-	choiceScreens.put(name, screen);
+	choiceController.add(name, screen);
 	return this;
     }    
 
     public ScreenControllerBuilder choice(
 	@NonNull String choiceScreenName, @NonNull String choiceName, int choice
     ) throws IllegalArgumentException {
-	if (!choiceScreens.containsKey(choiceScreenName)) {
+	if (!choiceController.has(choiceScreenName)) {
 	    throw new IllegalArgumentException(
 		"Cannot find a registered choice screen with name: " + choiceScreenName
 	    );
 	}
-	else if (!isScreenRegistered(choiceName)) {
-	    throw new IllegalArgumentException(
-		"Cannot find a registered screen with name: " + choiceName
-	    );	    
-	}
 	else {
-	    choiceMap.put(choiceScreenName, choice, choiceName);
+	    choiceController.setChoice(choiceScreenName, choice, choiceName);
 	    return this;
 	}
     }
@@ -56,19 +51,14 @@ public class ScreenControllerBuilder {
     public ScreenControllerBuilder follow(
 	@NonNull String transitionScreenName, @NonNull String screenName
     ) {
-	if (!transitionScreens.containsKey(transitionScreenName)) {
+	if (!transitionController.has(transitionScreenName)) {
 	    throw new IllegalArgumentException(
 		"Cannot find a registered choice screen with name: " +
 		transitionScreenName
 	    );
 	}
-	else if (!isScreenRegistered(screenName)) {
-	    throw new IllegalArgumentException(
-		"Cannot find a registered screen with name: " + screenName
-	    );	    
-	}
 	else {
-	    transitionMap.put(transitionScreenName, screenName);
+	    transitionController.setTransition(transitionScreenName, screenName);
 	    return this;
 	}	
     }
@@ -77,11 +67,11 @@ public class ScreenControllerBuilder {
 	@NonNull String name, Class<T> clazz
     ) throws IllegalArgumentException {
 	final ITransitionScreen screen;
-	if (transitionScreens.containsKey(name)) {
-	    screen = transitionScreens.get(name);
+	if (transitionController.has(name)) {
+	    screen = transitionController.get(name);
 	}
-	else if (choiceScreens.containsKey(name)) {
-	    screen = choiceScreens.get(name);
+	else if (choiceController.has(name)) {
+	    screen = choiceController.get(name);
 	}
 	else {
 	    throw new IllegalArgumentException(
@@ -99,7 +89,7 @@ public class ScreenControllerBuilder {
     }
 
     public boolean isScreenRegistered(@NonNull String screenName) {
-	return choiceScreens.containsKey(screenName) ||
-	    transitionScreens.containsKey(screenName);
+	return choiceController.has(screenName) ||
+	    transitionController.has(screenName);
     }
 }
