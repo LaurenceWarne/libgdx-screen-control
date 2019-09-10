@@ -9,15 +9,27 @@ import lombok.NonNull;
  */
 public class ScreenControllerBuilder {
 
+    @NonNull
     private final TransitionScreenController transitionController =
 	new TransitionScreenController();
+    @NonNull
     private final ChoiceScreenController choiceController =
 	new ChoiceScreenController();
+    @NonNull
     private String startingScreenName;
 
-    public ScreenControllerBuilder withStartingScreen(@NonNull String screenName) {
-	this.startingScreenName = screenName;
-	return this;
+    public ScreenControllerBuilder withStartingScreen(
+	@NonNull String screenName
+    ) throws IllegalArgumentException {
+	if (isScreenRegistered(screenName)) {
+	    this.startingScreenName = screenName;
+	    return this;
+	}
+	else {
+	    throw new IllegalArgumentException(
+		"A screen with name: " + startingScreenName + " has not been registered"
+	    );
+	}
     }
     
     public ScreenControllerBuilder register(
@@ -91,5 +103,12 @@ public class ScreenControllerBuilder {
     public boolean isScreenRegistered(@NonNull String screenName) {
 	return choiceController.has(screenName) ||
 	    transitionController.has(screenName);
+    }
+
+    public ScreenController build() {
+	// validate?
+	return new ScreenController(
+	    transitionController, choiceController, startingScreenName
+	);
     }
 }
