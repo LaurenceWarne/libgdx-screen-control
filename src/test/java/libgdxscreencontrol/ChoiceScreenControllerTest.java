@@ -25,8 +25,6 @@ public class ChoiceScreenControllerTest {
     public void setUp() {
 	MockitoAnnotations.initMocks(this);
 	csController = new ChoiceScreenController();
-
-	Mockito.when(s1.getNoOfChoices()).thenReturn(5);
     }
 
     @Test
