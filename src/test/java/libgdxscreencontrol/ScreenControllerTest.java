@@ -178,4 +178,17 @@ public class ScreenControllerTest {
 	verify(t1, times(1)).reset();
     }
 
+    @Test
+    public void testActiveScreenNotChangedAfterUpdateException() {
+	controller = new ScreenController(tc, cc, "loading-screen");
+	when(tc.get("loading-screen")).thenReturn(t1);
+	when(tc.has("loading-screen")).thenReturn(true);
+	when(tc.getTransition("loading-screen")).thenReturn("game-screen");
+	try {
+	    controller.update();
+	} catch (IllegalArgumentException e) {
+	    assertTrue(t1 == controller.get());
+	}
+    }
+
 }

@@ -7,6 +7,9 @@ import libgdxscreencontrol.screen.IChoiceScreen;
 import libgdxscreencontrol.screen.ITransitionScreen;
 import lombok.NonNull;
 
+/**
+ * Allows for easy management of screen heirachies.
+ */
 public class ScreenController {
 
     @NonNull
@@ -38,20 +41,26 @@ public class ScreenController {
 	}
     }
 
-    public Screen get() throws IllegalStateException {
+    /**
+     * Get the currently active {@link Screen} object.
+     *
+     * @return active screen object
+     */
+    public Screen get() {
 	if (transitionController.has(currentScreenName)) {
 	    return transitionController.get(currentScreenName);
 	}
-	else if (choiceController.has(currentScreenName)) {
-	    return choiceController.get(currentScreenName);
-	}
 	else {
-	    throw new IllegalStateException(
-		"No screen found with name: " + currentScreenName
-	    );
+	    return choiceController.get(currentScreenName);
 	}
     }
 
+    /**
+     * Query the active {@link Screen}, if it has finished processing, return true, else false. If this method returns true, it signifies that this object has a new active screen, which can be accessed throught the <code>get()</code> method. No change in screen is made if the string designating the new screen is not associated with an existing screen and an IllegalStateException is thrown
+     *
+     * @return true if the active screen has been changed, else false
+     * @throws IllegalStateException if a new active screen is not registered
+     */
     public boolean update() throws IllegalStateException {
 	if (transitionController.has(currentScreenName)) {
 	    return updateTransition();
@@ -106,12 +115,15 @@ public class ScreenController {
 	}
 	else {
 	    throw new IllegalStateException(
-		"No screen found with name: " + currentScreenName
+		"No screen found with name: '" + currentScreenName + "'"
 	    );
 	}
 	usedScreens.put(currentScreenName, currentScreen);	    
     }
 
+    /**
+     * Dispose of all screens which have at some point been the active screen of this object.
+     */
     public void dispose() {
 	for (Screen screen : usedScreens.values()) {
 	    screen.dispose();
