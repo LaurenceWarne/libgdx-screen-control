@@ -47,11 +47,10 @@ public class TransitionScreenController {
     }
 
     /**
-     * Get the transition assigned to the specified transitionScreenName.
+     * Get the name of the screen which succeeds the specified {@link ITransitionScreen}
      *
-     * @param transitionScreenName of the screen
-     * @param transition
-     * @return name of transition
+     * @param transitionScreenName the string associated with the {@link ITransitionScreen}
+     * @return name of screen succeeding the transition screen
      * @throws IllegalArgumentException if the transition has not yet been assigned or a screen with the specified name is not registered with this object.
      */
     public String getTransition(

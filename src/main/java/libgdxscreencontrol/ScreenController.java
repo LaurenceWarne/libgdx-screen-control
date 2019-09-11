@@ -1,7 +1,7 @@
 package libgdxscreencontrol;
 
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.utils.ObjectSet;
+import com.badlogic.gdx.utils.ObjectMap;
 
 import libgdxscreencontrol.screen.IChoiceScreen;
 import libgdxscreencontrol.screen.ITransitionScreen;
@@ -18,7 +18,7 @@ public class ScreenController {
     @NonNull
     private String currentScreenName;
     @NonNull
-    private ObjectSet<Screen> usedScreens = new ObjectSet<>();
+    private ObjectMap<String, Screen> usedScreens = new ObjectMap<>();
 
     ScreenController(
 	@NonNull TransitionScreenController transitionScreenController,
@@ -28,7 +28,14 @@ public class ScreenController {
 	this.transitionController = transitionScreenController;
 	this.choiceController = choiceScreenController;
 	this.currentScreenName = startingScreen;
-	setCurrentScreenFromName();
+	try {
+	    setCurrentScreenFromName();
+	} catch (IllegalStateException e) {
+	    throw new IllegalArgumentException(
+		"The screen: " + startingScreen + " does not refer to any" +
+		" registered screen"
+	    );
+	}
     }
 
     public Screen get() throws IllegalStateException {
@@ -59,7 +66,7 @@ public class ScreenController {
 	}	
     }
 
-    private boolean updateChoice() {
+    private boolean updateTransition() throws IllegalStateException {
 	final ITransitionScreen screen = transitionController.get(currentScreenName);
 	if (screen.isFinished()) {
 	    currentScreenName = transitionController.getTransition(currentScreenName);
@@ -71,7 +78,7 @@ public class ScreenController {
 	}
     }
 
-    private boolean updateTransition() throws IllegalStateException {
+    private boolean updateChoice() throws IllegalStateException {
 	final IChoiceScreen screen = choiceController.get(currentScreenName);
 	if (screen.isFinished()) {
 	    final int choice = screen.getChoice();
@@ -87,18 +94,26 @@ public class ScreenController {
     private void setCurrentScreenFromName() throws IllegalStateException {
 	if (transitionController.has(currentScreenName)) {
 	    this.currentScreen = transitionController.get(currentScreenName);
+	    if (usedScreens.containsKey(currentScreenName)) {
+		transitionController.get(currentScreenName).reset();
+	    }
 	}
 	else if (choiceController.has(currentScreenName)) {
 	    this.currentScreen = choiceController.get(currentScreenName);
+	    if (usedScreens.containsKey(currentScreenName)) {
+		choiceController.get(currentScreenName).reset();
+	    }
 	}
 	else {
-	    throw new IllegalStateException();
+	    throw new IllegalStateException(
+		"No screen found with name: " + currentScreenName
+	    );
 	}
-	usedScreens.add(currentScreen);
+	usedScreens.put(currentScreenName, currentScreen);	    
     }
 
     public void dispose() {
-	for (Screen screen : usedScreens) {
+	for (Screen screen : usedScreens.values()) {
 	    screen.dispose();
 	}
     }

@@ -130,7 +130,7 @@ public class ScreenControllerBuilder {
      * @param screenName name of the next screen
      * @return this instance for chaining
      */
-    public ScreenControllerBuilder followWith(
+    public ScreenControllerBuilder setSuccession(
 	@NonNull String transitionScreenName, @NonNull String screenName
     ) throws IllegalArgumentException {
 	if (!transitionController.has(transitionScreenName)) {
@@ -193,9 +193,16 @@ public class ScreenControllerBuilder {
      * Create a {@link ScreenController} instance using the configuration supplied to this object.
      *
      * @return {@link ScreenController}
+     * @throws IllegalStateException if the starting screen has not been set
      */
-    public ScreenController build() {
-	// validate?
+    public ScreenController build() throws IllegalArgumentException {
+	// validate more?
+	if (startingScreenName == null) {
+	    throw new IllegalStateException(
+		"The starting screen has not been set!" +
+		" Use .withStartingScreen(myScreen) to set a starting screen"
+	    );
+	}
 	return new ScreenController(
 	    transitionController, choiceController, startingScreenName
 	);

@@ -25,7 +25,6 @@ public class ScreenControllerBuilderTest {
     @Mock
     private IChoiceScreenFactory<?> cf1, cf2;
 
-
     @Before
     public void setUp() {
 	MockitoAnnotations.initMocks(this);
@@ -78,26 +77,26 @@ public class ScreenControllerBuilderTest {
     public void testCanFollowTransitionScreenWithTransitionScreen() {
 	sc.register("screen1", t1);
 	sc.register("screen2", t2);
-	sc.followWith("screen1", "screen2");
+	sc.setSuccession("screen1", "screen2");
     }
 
     @Test
     public void testCanFollowTransitionScreenWithChoiceScreen() {
 	sc.register("screen1", t1);
 	sc.register("choice", c2);
-	sc.followWith("screen1", "choice");
+	sc.setSuccession("screen1", "choice");
     }
 
     @Test
     public void testCanFollowScreenWithScreenNotRegistered() {
 	sc.register("screen1", t1);
-	sc.followWith("screen1", "screen2");
+	sc.setSuccession("screen1", "screen2");
     }
 
     @Test(expected=IllegalArgumentException.class)
     public void testCorrectExceptionThrownOnInitialScreenNotRegistered() {
 	sc.register("screen1", t1)
-	    .followWith("screen2", "screen1");
+	    .setSuccession("screen2", "screen1");
     }
 
     @Test
@@ -138,6 +137,25 @@ public class ScreenControllerBuilderTest {
     public void testCorrectExceptionThrownWithScreenNotRegistered() {
 	sc.register("screen1", t1)
 	    .choice("screen2", "screen1", 1);
+    }
+
+    @Test(expected=IllegalStateException.class)
+    public void testCorrectExceptionThrownWhenStartingScreenNotSet() {
+	ScreenController controller = new ScreenControllerBuilder()
+	    .register("my cool screen", t1)
+	    .register("my other screen", c1)
+	    .setSuccession("my cool screen", "my other screen")
+	    .build();
+    }
+
+    @Test
+    public void testCanCreateControllerWhenStartingScreenSet() {
+	ScreenController controller = new ScreenControllerBuilder()
+	    .register("my cool screen", t1)
+	    .register("my other screen", c1)
+	    .withStartingScreen("my cool screen")
+	    .setSuccession("my cool screen", "my other screen")
+	    .build();
     }
     
 }
